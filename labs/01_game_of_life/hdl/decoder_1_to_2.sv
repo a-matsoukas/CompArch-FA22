@@ -6,20 +6,9 @@ output logic [1:0] out;
 
 logic in_bar;
 always_comb begin
-    out[1] = in & ena;
-    in_bar = ~in;
-    out[0] = in_bar & ena; // Alternate: out[0] = ~in & ena;
-end
-
-logic in_bar;
-always_comb begin
   out[1] = in & ena;
-  in_bar = ~ in;
-  out[0] = in_bar & ena;
+  in_bar = ~in;
+  out[0] = in_bar & ena; // Alternate: out[0] = ~in & ena;
 end
-
-// Alternate:
-// always_comb out[0] = ~in & ena;
-
 
 endmodule
