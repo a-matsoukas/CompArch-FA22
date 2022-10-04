@@ -16,7 +16,10 @@ MAIN_SRCS=${CONWAY_SRCS} ${LED_ARRAY_SRCS} hdl/main.sv
 .PHONY: clean submission remove_solutions
 
 test_decoder_1_to_2: tests/test_decoder_1_to_2.sv ${DECODER_SRCS}
-	${IVERILOG} $^ -o test_decoders.bin && ${VVP} test_decoders.bin ${VVP_POST}
+	${IVERILOG} $^ -o test_decoder_1_to_2.bin && ${VVP} test_decoder_1_to_2.bin ${VVP_POST}
+
+test_decoder_2_to_4: tests/test_decoder_2_to_4.sv ${DECODER_SRCS}
+	${IVERILOG} $^ -o test_decoder_2_to_4.bin && ${VVP} test_decoder_2_to_4.bin ${VVP_POST}
 
 test_decoders: tests/test_decoders.sv ${DECODER_SRCS}
 	${IVERILOG} $^ -o test_decoders.bin && ${VVP} test_decoders.bin ${VVP_POST}
