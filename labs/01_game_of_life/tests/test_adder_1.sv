@@ -5,7 +5,7 @@
 
 module test_adder_1;
   logic a, b, c_in;
-  wire out;
+  wire sum, c_out;
 
   adder_1 UUT(a, b, c_in, sum, c_out);
 
@@ -17,15 +17,15 @@ module test_adder_1;
     a = 0;
     $display("in c_in | sum c_out");
     for (int i = 0; i < 4; i = i + 1) begin
-      b = i[0];
-      c_in = i[1];
+      b = i[1];
+      c_in = i[0];
       #1 $display("%1b %1b %1b | %1b %1b", a, b, c_in, sum, c_out);
     end
 
     a = 1;
     for (int i = 0; i < 4; i = i + 1) begin
-      b = i[0];
-      c_in = i[1];
+      b = i[1];
+      c_in = i[0];
       #1 $display("%1b %1b %1b | %1b %1b", a, b, c_in, sum, c_out);
     end
         
