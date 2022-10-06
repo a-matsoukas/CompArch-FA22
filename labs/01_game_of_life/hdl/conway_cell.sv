@@ -12,5 +12,33 @@ output logic state_q;
 
 input wire [7:0] neighbors;
 
+// Sum thing?
+logic [3:0] sum;
+assign sum = 4'b0;
+logic c_out;
+assign c_out = 1'b0;
+// logic [3:0] tmp;
+
+generate
+    genvar i, tmp;
+    for(i = 0; i < 4; i++) begin
+        // tmp = 4'b1 & neighbors[i];
+        // assign tmp = 4'b1; // neighbors[i] == 1 ? 4'b1 : 4'b0;
+        adder_n #(.N(4)) adder_4bit (
+            .a(sum),
+            .b(4'b1),
+            .c_in(1'b0),
+            .sum(sum),
+            .c_out(c_out));
+    end
+endgenerate
+
+always_ff @( posedge clk ) begin
+    state_q <= ena & ~rst & ((sum == 3) | (state_0 & (sum == 2)));
+end
+
+
+
+
 
 endmodule
