@@ -11,10 +11,10 @@ module mux32(
   in00, in01, in02, in03, in04, in05, in06, in07, in08, in09, in10, 
   in11, in12, in13, in14, in15, in16, in17, in18, in19, in20, in21, 
   in22, in23, in24, in25, in26, in27, in28, in29, in30, in31,
-  select,out
+  select, out
 );
 	//parameter definitions
-	parameter N = 1;
+	parameter N = 5;
 	//port definitions
   // python: print(", ".join([f"in{i:02}" for i in range(32)]))
 	input  wire [(N-1):0] in00, in01, in02, in03, in04, in05, in06, in07, in08, 
@@ -22,5 +22,13 @@ module mux32(
     in21, in22, in23, in24, in25, in26, in27, in28, in29, in30, in31;
 	input  wire [4:0] select;
 	output logic [(N-1):0] out;
+
+  logic [(N-1):0] mux_out0, mux_out1;
+  mux16 mux16_0(in00, in01, in02, in03, in04, in05, in06, in07, in08, in09, in10, 
+  in11, in12, in13, in14, in15, select[3:0], mux_out0);
+  mux16 mux16_1(in16, in17, in18, in19, in20, 
+    in21, in22, in23, in24, in25, in26, in27, in28, in29, in30, in31, select[3:0], mux_out1);
+
+  assign out = select[4] ? mux_out1 : mux_out0;
 
 endmodule
