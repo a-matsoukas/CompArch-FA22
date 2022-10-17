@@ -7,7 +7,7 @@ input wire rst;
 input wire ena;
 
 input wire state_0;
-output logic [3:0] state_d; // NOTE - this is only an output of the module for debugging purposes. 
+output logic state_d; // NOTE - this is only an output of the module for debugging purposes. 
 output logic state_q;
 
 input wire [7:0] neighbors;
@@ -17,11 +17,8 @@ logic [3:0] sum;
 logic c_out;
 
 logic [35:0] sum_memory;
-
-always_comb begin
-    sum_memory[3:0] = 4'b0;
-    sum[3:0] = sum_memory[35:32];
-end
+assign sum_memory[3:0] = 4'b0;
+assign sum[3:0] = sum_memory[35:32];
 
 wire [7:0] carries_out;
 
