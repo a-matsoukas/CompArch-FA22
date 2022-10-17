@@ -7,7 +7,7 @@ input wire rst;
 input wire ena;
 
 input wire state_0;
-output logic state_d; // NOTE - this is only an output of the module for debugging purposes. 
+output logic [3:0] state_d; // NOTE - this is only an output of the module for debugging purposes. 
 output logic state_q;
 
 input wire [7:0] neighbors;
@@ -38,7 +38,10 @@ endgenerate
 
 always_ff @( posedge clk ) begin
     state_q <= ena & ~rst & ((sum == 3) | (state_0 & (sum == 2)));
-    state_d <= state_q;
+end
+
+always_ff @( posedge clk ) begin
+        state_d <= sum; //ena & ~rst & ((sum == 3) | (state_0 & (sum == 2)));
 end
 
 
