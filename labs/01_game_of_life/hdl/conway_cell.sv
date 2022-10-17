@@ -34,8 +34,12 @@ generate
     end
 endgenerate
 
+logic sum_is_2, sum_is_3;
+
 always_comb begin
-    state_d = rst ? state_0 : (sum == 3) | (state_q & (sum == 2));
+    sum_is_3 = &({~sum[3], ~sum[2], sum[1], sum[0]});
+    sum_is_2 = &({~sum[3], ~sum[2], sum[1], ~sum[0]});
+    state_d = rst ? state_0 : (sum_is_3 | (state_q & sum_is_2));
 end
 
 always_ff @( posedge clk ) begin
