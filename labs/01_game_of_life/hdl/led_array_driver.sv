@@ -36,9 +36,9 @@ always_comb cols = x_decoded;
 generate
   genvar j;
   for (j = 0; j < N; j++) begin
-    always_comb rows[j] = cells[N * j + x];
+    always_comb rows[j] = ~cells[N * x + j];
   end
-
+// row[1] = ~|(x_decoded[4:0] & cells[9:5]);
 endgenerate
 
 endmodule
