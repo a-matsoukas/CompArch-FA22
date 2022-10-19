@@ -33,6 +33,7 @@ decoder_3_to_8 COL_DECODER(ena, x, x_decoded);
 
 always_comb cols = x_decoded;
 
+
 generate
   genvar j;
   for (j = 0; j < N; j++) begin
@@ -40,5 +41,25 @@ generate
   end
 // row[1] = ~|(x_decoded[4:0] & cells[9:5]);
 endgenerate
+
+
+/*
+generate
+  genvar j;
+  for (j = 0; j < N; j++) begin
+    always_comb rows[j] = ~| (x_decoded[N-1:0] & cells[N * j + N - 1 : N * j]);
+  end
+endgenerate
+*/
+/*
+always_comb begin
+  rows[0] = ~| (x_decoded[4:0] & cells[4:0]);
+  rows[1] = ~| (x_decoded[4:0] & cells[9:5]);
+  rows[2] = ~| (x_decoded[4:0] & cells[14:10]);
+  rows[3] = ~| (x_decoded[4:0] & cells[19:15]);
+  rows[4] = ~| (x_decoded[4:0] & cells[24:20]);
+end
+*/
+
 
 endmodule
