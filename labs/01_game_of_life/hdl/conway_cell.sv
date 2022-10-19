@@ -24,7 +24,7 @@ wire [7:0] carries_out;
 
 generate
     genvar i;
-    for(i = 0; i < 8; i++) begin
+    for(i = 0; i < 8; i++) begin : generated_conway_adders
         adder_n #(.N(4)) adder_4bit (
             .a(sum_memory[i*4 + 3 : i*4]),
             .b({3'b0, neighbors[i]}),
@@ -39,11 +39,11 @@ logic sum_is_2, sum_is_3;
 always_comb begin
     sum_is_3 = &({~sum[3], ~sum[2], sum[1], sum[0]});
     sum_is_2 = &({~sum[3], ~sum[2], sum[1], ~sum[0]});
-    state_d = rst ? state_0 : (sum_is_3 | (state_q & sum_is_2));
+    state_d = ena ? (sum_is_3 | (state_q & sum_is_2)) : state_q;
 end
 
 always_ff @( posedge clk ) begin
-    state_q <= ena ? state_d : state_q;
+    state_q <= rst ? state_0 : state_d;
 end
 
 

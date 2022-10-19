@@ -39,7 +39,6 @@ generate
   for (j = 0; j < N; j++) begin
     always_comb rows[j] = ~cells[N * x + j];
   end
-// row[1] = ~|(x_decoded[4:0] & cells[9:5]);
 endgenerate
 
 
@@ -51,15 +50,7 @@ generate
   end
 endgenerate
 */
-/*
-always_comb begin
-  rows[0] = ~| (x_decoded[4:0] & cells[4:0]);
-  rows[1] = ~| (x_decoded[4:0] & cells[9:5]);
-  rows[2] = ~| (x_decoded[4:0] & cells[14:10]);
-  rows[3] = ~| (x_decoded[4:0] & cells[19:15]);
-  rows[4] = ~| (x_decoded[4:0] & cells[24:20]);
-end
-*/
+
 
 
 endmodule
