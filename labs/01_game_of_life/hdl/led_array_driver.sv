@@ -31,4 +31,26 @@ end
 wire [N-1:0] x_decoded;
 decoder_3_to_8 COL_DECODER(ena, x, x_decoded);
 
+always_comb cols = x_decoded;
+
+
+generate
+  genvar j;
+  for (j = 0; j < N; j++) begin
+    always_comb rows[j] = ~cells[N * x + j];
+  end
+endgenerate
+
+
+/*
+generate
+  genvar j;
+  for (j = 0; j < N; j++) begin
+    always_comb rows[j] = ~| (x_decoded[N-1:0] & cells[N * j + N - 1 : N * j]);
+  end
+endgenerate
+*/
+
+
+
 endmodule

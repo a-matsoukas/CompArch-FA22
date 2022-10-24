@@ -7,7 +7,8 @@ module test_conway_cell;
 
 logic clk, rst, ena, state_0;
 logic [7:0] neighbors;
-wire state_d, state_q;
+wire state_d;
+wire state_q;
 
 conway_cell UUT(
   .clk(clk), .rst(rst), .ena(ena),

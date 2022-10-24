@@ -1,2 +1,7 @@
 *.fst
 *.bin
+
+*.log
+*.jou
+*.checkpoint
+.Xil
