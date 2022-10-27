@@ -1,0 +1,24 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Thu Oct 27 03:13:33 2022
+[*]
+[dumpfile] "/home/lila/Documents/schoolwork/comparch/CompArch-FA22/hws/5/pwm.fst"
+[dumpfile_mtime] "Thu Oct 27 03:12:32 2022"
+[dumpfile_size] 4580
+[savefile] "/home/lila/Documents/schoolwork/comparch/CompArch-FA22/hws/5/wave_cfgs/pwm.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-30.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] test_pwm.
+[sst_width] 233
+[signals_width] 126
+[sst_expanded] 1
+[sst_vpaned_height] 144
+@22
+test_pwm.PWM.counter[3:0]
+@28
+test_pwm.PWM.out
+test_pwm.PWM.step
+[pattern_trace] 1
+[pattern_trace] 0

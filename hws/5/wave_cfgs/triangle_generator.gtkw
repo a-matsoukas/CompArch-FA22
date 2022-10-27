@@ -1,0 +1,25 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Thu Oct 27 00:22:40 2022
+[*]
+[dumpfile] "/home/lila/Documents/schoolwork/comparch/CompArch-FA22/hws/5/triangle_generator.fst"
+[dumpfile_mtime] "Thu Oct 27 00:19:39 2022"
+[dumpfile_size] 990
+[savefile] "/home/lila/Documents/schoolwork/comparch/CompArch-FA22/hws/5/wave_cfgs/triangle_generator.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-18.000000 120000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] test_triangle_generator.
+[sst_width] 233
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 144
+@28
+test_triangle_generator.UUT.clk
+test_triangle_generator.UUT.counter_is_max
+test_triangle_generator.UUT.counter_is_zero
+@8022
+test_triangle_generator.UUT.out[3:0]
+[pattern_trace] 1
+[pattern_trace] 0
