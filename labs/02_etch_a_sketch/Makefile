@@ -42,3 +42,17 @@ memories/ili9341_init.memh: generate_memories.py
 memories/fibonacci.memh: generate_memories.py
 	./generate_memories.py --memory fibonacci --out memories/fibonacci.memh
 
+# Call this to open pulse generator waveform
+waves_pulse_generator: test_pulse_generator 
+#test -e pulse_generator.fst || make test_pulse_generator
+	gtkwave pulse_generator.fst --save=wave_cfgs/waves_pulse_generator.gtkw
+
+# Call this to open triange generator waveform
+waves_triangle_generator: test_triangle_generator
+#test -e triangle_generator.fst || make test_triangle_generator
+	gtkwave triangle_generator.fst --save=wave_cfgs/waves_triangle_generator.gtkw
+
+# Call this to open pwm waveform
+waves_pwm: test_pwm
+#test -e pwm.fst || make test_pwm
+	gtkwave pwm.fst --save=wave_cfgs/waves_pwm.gtkw
