@@ -56,3 +56,22 @@ waves_triangle_generator: test_triangle_generator
 waves_pwm: test_pwm
 #test -e pwm.fst || make test_pwm
 	gtkwave pwm.fst --save=wave_cfgs/waves_pwm.gtkw
+
+main.bit: $(MAIN_SRCS)
+	@echo "########################################"
+	@echo "#### Building FPGA bitstream        ####"
+	@echo "########################################"
+	${VIVADO} build.tcl
+
+program_fpga_vivado: main.bit
+	@echo "########################################"
+	@echo "#### Programming FPGA (Vivado)      ####"
+	@echo "########################################"
+	${VIVADO} program.tcl
+
+program_fpga_digilent: main.bit
+	@echo "########################################"
+	@echo "#### Programming FPGA (Digilent)    ####"
+	@echo "########################################"
+	djtgcfg enum
+	djtgcfg prog -d CmodA7 -i 0 -f main.bit
