@@ -12,7 +12,8 @@ input wire step; // Enables the internal counter. You should only increment when
 input wire [N-1:0] duty; // The "duty cycle" input.
 output logic out;
 
-logic [N-1:0] counter;
+logic [N-1:0] counter, counter_next;
+logic local_rst;
 
 // Create combinational (always_comb) and sequential (always_ff @(posedge clk)) 
 // logic that drives the out signal.
@@ -23,5 +24,19 @@ logic [N-1:0] counter;
 // You can use behavioural combinational logic, but try to keep your sequential
 //   and combinational blocks as separate as possible.
 
+always_comb begin
+  counter_next = counter + 1;
+  local_rst = rst | &(counter);
+end
+
+always_ff @(posedge clk) begin : increment_counter
+  if (local_rst) begin
+    counter <= 0;
+  end
+  else if (step) begin
+    counter <= counter_next;
+    out = counter < duty & ena;
+  end
+end
 
 endmodule

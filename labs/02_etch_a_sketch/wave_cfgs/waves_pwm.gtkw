@@ -1,0 +1,24 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Wed Nov  2 00:04:22 2022
+[*]
+[dumpfile] "/home/amatsoukas/Computer Architecture/CompArch-FA22/labs/02_etch_a_sketch/pwm.fst"
+[dumpfile_mtime] "Wed Nov  2 00:03:10 2022"
+[dumpfile_size] 4577
+[savefile] "/home/amatsoukas/Computer Architecture/CompArch-FA22/labs/02_etch_a_sketch/wave_cfgs/waves_pwm.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-31.675825 2980000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] test_pwm.
+[sst_width] 233
+[signals_width] 126
+[sst_expanded] 1
+[sst_vpaned_height] 144
+@22
+test_pwm.PWM.counter[3:0]
+test_pwm.PWM.duty[3:0]
+@28
+test_pwm.PWM.out
+[pattern_trace] 1
+[pattern_trace] 0
