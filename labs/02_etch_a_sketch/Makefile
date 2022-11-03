@@ -75,3 +75,7 @@ program_fpga_digilent: main.bit
 	@echo "########################################"
 	djtgcfg enum
 	djtgcfg prog -d CmodA7 -i 0 -f main.bit
+
+clean:
+	rm -f *.bin *.vcd *.fst vivado*.log *.jou vivado*.str *.log *.checkpoint *.bit *.html *.xml
+	rm -rf .Xil
