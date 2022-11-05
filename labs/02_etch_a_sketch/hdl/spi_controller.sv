@@ -36,6 +36,10 @@ enum logic [2:0] {S_IDLE, S_TXING, S_TX_DONE, S_RXING, S_RX_DONE, S_ERROR } stat
 logic [15:0] tx_data;
 logic [23:0] rx_data;
 
+always_comb begin
+  tx_data = i_data;
+end
+
 always_comb begin : csb_logic
   case(state)
     S_IDLE, S_ERROR : csb = 1;
@@ -74,6 +78,14 @@ always_ff @(posedge clk) begin : spi_controller_fsm
   end else begin
     case(state)
       S_IDLE : begin
+        if (i_ready & i_valid) begin
+          state <= S_TXING;
+          i_ready <= 0;
+          case (spi_mode)
+            WRITE_16 : bit_counter <= 5'd16;
+            default : bit_counter <= 5'd8;
+          endcase
+        end
       end
       S_TXING : begin
         sclk <= ~sclk;
