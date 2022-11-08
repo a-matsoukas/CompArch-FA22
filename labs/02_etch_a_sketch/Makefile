@@ -89,7 +89,3 @@ clean:
 # Call this to generate your submission zip file.
 submission:
 	zip submission.zip Makefile hdl/*.sv README.md docs/* *.tcl *.xdc tests/*.sv tests/*.gtkw *.pdf
-
-clean:
-	rm -f *.bin *.vcd *.fst vivado*.log *.jou vivado*.str *.log *.checkpoint *.bit *.html *.xml
-	rm -rf .Xil
