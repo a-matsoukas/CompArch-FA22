@@ -9,7 +9,7 @@ input wire clk, rst, ena;
 input wire [N-1:0] ticks;
 output logic out;
 
-logic [N-1:0] counter;
+
 logic counter_comparator;
 logic [N-1:0] counter_pp;
 logic rst_counter;
