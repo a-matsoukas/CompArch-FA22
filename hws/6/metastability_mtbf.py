@@ -3,7 +3,7 @@
 import numpy as np
 
 SECONDS_IN_A_DAY = 24*60*60*1.0
-SECONDS_IN_A_YEAR = 365*SECONDS_IN_A_DAY
+# SECONDS_IN_A_YEAR = 365*SECONDS_IN_A_DAY
 
 def probability_of_failure(
   f_c = 1e6,
@@ -17,10 +17,10 @@ def probability_of_failure(
 
 if __name__ == "__main__":
     N = 24.0
-    for f_c in np.logspace(8, 9, 10):  
+    for f_c in np.logspace(8.53, 8.5853, 10):  
         p_f_individual = probability_of_failure(f_c = f_c)
         p_f_system = N*p_f_individual
         MTBF_individual = 1/p_f_individual
         MTBF_system = 1/p_f_system
 
-        print(f"f_c = {f_c:e} Hz, p(f) = {p_f_individual:e}, MTBF_system = {MTBF_individual/SECONDS_IN_A_YEAR:8.1f} years")
+        print(f"f_c = {f_c:e} Hz, p(f) = {p_f_individual:e}, MTBF_system = {MTBF_individual/SECONDS_IN_A_DAY:8.1f} days")
