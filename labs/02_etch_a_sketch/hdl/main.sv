@@ -149,7 +149,7 @@ ili9341_display_controller ILI9341(
   .vram_rd_addr(vram_rd_addr),
   .vram_rd_data(vram_rd_data),
   // !!! NOTE - change enable_test_pattern to zero once you start implementing the video ram !!!
-  .enable_test_pattern(1'b1) 
+  .enable_test_pattern(1'b0) 
 );
 
 /* ------------------------------------------------------------------------- */
@@ -182,5 +182,24 @@ block_ram #(.W(VRAM_W), .L(VRAM_L)) VRAM(
   .wr_ena(vram_wr_ena), .wr_addr(vram_wr_addr), .wr_data(vram_wr_data)
 );
 // Add your vram control FSM here:
+
+
+always_comb begin
+  // Should this be in ff block?
+  vram_wr_ena = touch0.valid ? 1 : 0;
+  vram_wr_addr = touch0.y*DISPLAY_WIDTH + {8'd0, touch0.x}; 
+end 
+
+always_ff @(posedge clk) begin : write_to_memory
+  if (rst) begin
+    // Set memory for addresses to BLACK
+    // Possibly need counter? That goes through VRAM_
+  end
+  else begin
+    if(vram_wr_ena) begin
+      // Give addresses and data
+    end
+  end
+end
 
 endmodule
