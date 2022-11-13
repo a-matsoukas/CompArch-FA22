@@ -82,7 +82,3 @@ Design and implement an FSM that can:
 - [ ] emit draw signals based on memory.
 - [ ] bonus: add colors, different modes.
 - [ ] stretch bonus: add fonts/textures! (hint, creating more ROMs (see `generate_memories.py` is a good way to approach this).
-
-# Questions We Have
-- Why is there a difference between `i_data` and `tx_data`?
-- How do we enter `S_TXING`?

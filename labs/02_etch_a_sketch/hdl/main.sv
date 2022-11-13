@@ -183,23 +183,61 @@ block_ram #(.W(VRAM_W), .L(VRAM_L)) VRAM(
 );
 // Add your vram control FSM here:
 
+enum logic [1:0] { S_IDLE, S_WRITE, S_CLEAR, S_ERROR } vram_state;
+
+logic [$clog2(VRAM_L)-1:0] vram_wr_addr_writing;
+logic counter_full;
 
 always_comb begin
-  // Should this be in ff block?
-  vram_wr_ena = touch0.valid ? 1 : 0;
-  vram_wr_addr = touch0.y*DISPLAY_WIDTH + {8'd0, touch0.x}; 
+  vram_wr_addr_writing = touch0.y*DISPLAY_WIDTH + {8'd0, touch0.x};
+  counter_full = &(vram_clear_counter);
 end 
 
 always_ff @(posedge clk) begin : write_to_memory
-  if (rst) begin
-    // Set memory for addresses to BLACK
-    // Possibly need counter? That goes through VRAM_
-  end
-  else begin
-    if(vram_wr_ena) begin
-      // Give addresses and data
+  case (vram_state)
+    S_IDLE : begin
+      vram_wr_ena <= 0;
+      if (rst) begin
+        vram_state <= S_CLEAR;
+        vram_clear_counter <= 0;
+      end
+      else if (touch0.valid) begin 
+        vram_state <= S_WRITE;
+      end
     end
-  end
+    S_WRITE : begin
+      if (rst) begin
+        vram_state <= S_CLEAR;
+        vram_clear_counter <= 0;
+      end
+      else begin
+        vram_wr_addr <= vram_wr_addr_writing;
+        vram_wr_data <= RED;
+        vram_wr_ena <= 1;
+        vram_state <= S_IDLE;
+      end
+    end
+    S_CLEAR : begin
+      if (~counter_full) begin
+        vram_wr_addr <= vram_clear_counter;
+        vram_wr_data <= BLUE;
+        vram_wr_ena <= 1;
+        vram_clear_counter = vram_clear_counter + 1;
+      end
+      else begin
+        vram_state <= S_IDLE;
+      end
+    end
+    default : begin
+      if (rst) begin
+        vram_clear_counter <= 0;
+        vram_state <= S_CLEAR;
+      end
+      else begin
+        vram_state <= S_ERROR;
+      end
+    end
+  endcase
 end
 
 endmodule
