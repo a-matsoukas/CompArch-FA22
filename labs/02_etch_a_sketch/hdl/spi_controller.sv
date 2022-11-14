@@ -79,8 +79,8 @@ always_ff @(posedge clk) begin : spi_controller_fsm
           i_ready <= 0;
           tx_data <= i_data;
           case (spi_mode)
-            WRITE_16 : bit_counter <= 5'd16;
-            default : bit_counter <= 5'd8;
+            WRITE_16 : bit_counter <= 5'd15;
+            default : bit_counter <= 5'd7;
           endcase
         end
       end

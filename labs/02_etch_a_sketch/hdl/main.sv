@@ -212,7 +212,7 @@ always_ff @(posedge clk) begin : write_to_memory
       end
       else begin
         vram_wr_addr <= vram_wr_addr_writing;
-        vram_wr_data <= RED;
+        vram_wr_data <= CYAN;
         vram_wr_ena <= 1;
         vram_state <= S_IDLE;
       end
@@ -220,7 +220,7 @@ always_ff @(posedge clk) begin : write_to_memory
     S_CLEAR : begin
       if (~counter_full) begin
         vram_wr_addr <= vram_clear_counter;
-        vram_wr_data <= BLUE;
+        vram_wr_data <= BLACK;
         vram_wr_ena <= 1;
         vram_clear_counter = vram_clear_counter + 1;
       end
