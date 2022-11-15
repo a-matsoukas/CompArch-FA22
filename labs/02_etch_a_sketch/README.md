@@ -1,5 +1,7 @@
 # Lab 2: Etch a Sketch
 
+**Team Members:** Alex Matsoukas, Lila Smith
+
 In this lab we're going to build logic to make an "etch a sketch" or sketchpad hardware device. Over the course of the lab you will learn how to:
 * Design your own specifications for complex sequential and combinational logic blocks.
 * Implement controllers for the popular SPI and i2c serial interfaces.
@@ -18,16 +20,17 @@ We're using [Adafruit's 2.8" TFT LCD with Cap Touch Breakout Board w/MicroSD Soc
 Last, there are a ton of best practice techniques hidden in this folder, I encourage you to explore to get some practice of learning from professional examples.
 
 ## Lab Report Details
-- [ ] Pulse generator
-- [ ] PWM Module
-- [ ] Triangle Generator
-- [ ] One of:
-    - [ ] SPI Controller for Display
+- [X] Pulse generator
+- [X] PWM Module
+- [X] Triangle Generator
+- [X] One of:
+    - [X] SPI Controller for Display
     - [ ] i2c Controller for touchscreen
 - [ ] Learning from Professional Code: In your own words, describe the FSMs in:
     - [ ] `ili9341_display_controller.sv`
+        - 
     - [ ] `ft6206_controller.sv`
-- [ ] Design and implement a main FSM that interfaces with a video RAM.
+- [X] Design and implement a main FSM that interfaces with a video RAM.
 
 # Part 1) Sequential Logic & FPGA Programming
 Let's start with a simple example to make sure we all have the tools working and can effectively design, simulate, and synthesize combination logic and simple FSMs.
@@ -40,8 +43,12 @@ Get an instructor sign off by showing your working `gtkwave` simulation before p
 ## PWM Module
 Pulse Width Modulation, or PWM is the first and easiest way of trying to get an analog or continuous value from a digital signal. Design and simulate an implementation in `pwm.sv`. Like before, show your working simulation in `gtkwave` before proceeding.
 
+![](docs/pwm_diagram.png)
+
 ## Triangle Generator
 A triangle or sawtooth generator is a counter that starts at zero, counts up to its maximum value, then counts down back to zero, etc. Implement a simple FSM, and show your waveforms to an instructor before proceeding.
+
+![](docs/triangle_and_pulse_diagram.jpg)
 
 ## Putting it all together
 Last, we're going to showcase the three above modules in `main.sv` by fading the LEDs in and out. To do this we'll use `pulse_generators` to generate some slower "step" signals that keep things changing at human rates. Next we'll use our `triangle_generator` to make a signal we can use to brighten and dim our LEDs. Finally, the `pwm` modules actually drive the LEDs.
@@ -69,6 +76,9 @@ Once you have it working, make sure that the ILI9341 display controller in main.
 
 Finally, edit `ili9341_display_controller.sv`'s `display_color_logic` section to change the test pattern in any way. Bonus - make the test pattern change over time by adding an FSM of some sort!
 
+![](docs/spi_controller_state_machine.jpg)
+![](docs/test_pattern.jpg)
+
 ## 2b) Touchscreen Controller - Receiving Serialized Data over i2c
 This part is a little more challenging. 
 Your goal for this selection is to finish implementing `i2c_controller.sv` so that we can talk to the FT6206 touch screen controller on the display. Technically to use i2c you have to both send and receive serial data, but the focus of this is on receiving data from the capacitive touch sensor. There is a suggested `i2c_state_t` in `i2c_types.sv` - I encourage building your high level FSM around that. 
@@ -77,8 +87,12 @@ i2c can be a bit tricky of a protocol, so the real proof is if it works in synth
 
 # Part 3) Interfacing with VRAM
 Design and implement an FSM that can:
-- [ ] clear memory on button press.
-- [ ] update memory based on touch values.
-- [ ] emit draw signals based on memory.
+- [X] clear memory on button press.
+- [X] update memory based on touch values.
+- [X] emit draw signals based on memory.
 - [ ] bonus: add colors, different modes.
 - [ ] stretch bonus: add fonts/textures! (hint, creating more ROMs (see `generate_memories.py` is a good way to approach this).
+
+![](docs/main_state_machine.jpg)
+
+[**Link to Demo Video**](https://youtube.com/shorts/mXD6tAiJ33g?feature=share)
