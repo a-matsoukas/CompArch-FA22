@@ -26,10 +26,12 @@ Last, there are a ton of best practice techniques hidden in this folder, I encou
 - [X] One of:
     - [X] SPI Controller for Display
     - [ ] i2c Controller for touchscreen
-- [ ] Learning from Professional Code: In your own words, describe the FSMs in:
-    - [ ] `ili9341_display_controller.sv`
-        - 
-    - [ ] `ft6206_controller.sv`
+- [X] Learning from Professional Code: In your own words, describe the FSMs in:
+    - [X] `ili9341_display_controller.sv`
+        - The display controller begins in an initial state (`S_INIT`), which it can also enter if it is reset. In this state, it configures the display with the config FSM. After configuration, it enters `S_START_FRAME` and sets `data_commandb` to 0, which sends a command to the display. Then, it enters `S_WAIT_FOR_SPI` and will go to `S_TX_PIXEL_DATA_START` after it receives a ready command. `S_TX_PIXEL_DATA_START` sets `data_commandb` to 1, which indicates data is being sent to the display. Again, it goes to `S_WAIT_FOR_SPI` and will go to `S_INCREMENT_PIXEL` after it receives a ready command. In `S_INCREMENT_PIXEL`, it can either go to the next pixel or finish iterating through all pixels. If it goes to next pixel, it will go back to `S_TX_PIXEL_DATA_START` and begin its processes again. If it has finished with all pixels, it will go back to `S_START_FRAME` to begin a new frame.
+    - [X] `ft6206_controller.sv`
+        - The touchscreen controller FSM begins in `S_INIT`, which it can also be in after touching rst. From there, it will go to `S_SET_THRESHOLD_REG`, then to `S_WAIT_FOR_I2C_WR`. After `i_ready` is true, it will go to `S_SET_THRESHOLD_DATA`. Then, it will go to `S_WAIT_FOR_I2C_WR` again, waiting for `i_ready`, to become `S_IDLE`. Once in `S_READY`, if `i_ready` and `ena`, it will go to `S_GET_REG_REG`. Then, it will go to `S_WAIT_FOR_I2C_WR` before going to `S_GET_REG_DATA` once `i_ready`. Then, it will go to `S_WAIT_FOR_I2C_RD` before going to `S_GET_REG_DONE` after `i_ready` and `o_valid`. Now in `S_GET_REG_DONE`, it will do one of two things: set state to `S_IDLE` if `o_valid` is false or update touch register. When updating touch buffers, it will go to `S_TOUCH_DONE` if the `active_register` is equal to a specific constant, or go back to `S_GET_REG_REG` if not. In `S_TOUCH_DONE`, it will update the touch with the touch buffer, then go back to `S_IDLE`.
+        
 - [X] Design and implement a main FSM that interfaces with a video RAM.
 
 # Part 1) Sequential Logic & FPGA Programming
