@@ -13,8 +13,11 @@ output logic out;
 
 logic [N-1:0] counter;
 
+logic comparator;
+
 always_comb begin
-  out = ena & ( (counter < duty) | &counter );
+  comparator = counter < duty;
+  out = ena & ( comparator | &counter );
 end
 
 always_ff @(posedge clk) begin

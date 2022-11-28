@@ -21,7 +21,7 @@ The `mmu` will also dump out the various sub-memories into `mmu_*.out` - these a
 
 
 ## Suggested Timeline
-Designing your own CPU from scratch is both challenging and rewarding. I've provided a very minimum scaffolding here, but have intermediate solutions available on request (e.g. a core with r-types implemented that you can use as an example to build up to more instructions.)
+Designing your own CPU from scratch is both challenging and rewarding. I've provided a very minimum scaffolding here, but have *intermediate solutions available on request* (e.g. a core with r-types implemented that you can use as an example to build up to more instructions.)
 
 - Before the break - read through the provided stub, assembler, etc.
 - Monday - 11/28 - implement at least a few I and R type instructions.
@@ -29,6 +29,15 @@ Designing your own CPU from scratch is both challenging and rewarding. I've prov
 - Monday - 12/5 - required loads and stores done, work on branches.
 - Wednesday - 12/7 - get at least one branch working. 
 - Monday - 12/12 - Final submission due, though ideally you've wrapped up earlier so you can focus on your final project!
+
+## Hints and Tips
+- `print` or `$display` based debugging will only help so much for this project - using `gtkwave` to visualize the results will be much more helpful. 
+- The more concise the verilog, the harder it is to visualize which part of a long expression has a bug. Draw schematics, think in terms of hardware, and make sure you have a name for every meaningful bus in your design.
+- A large difficulty of this lab is just tracking which instruction your core is trying to execute, as well as having human readable versions of the massive amount of bits in the waveform viewer. The following tools are aimed to help with that:
+  - The custom `assembler.py` tool generates annotated `memh` files by default. If you open the corresponding `memh` file for assembly it will show you both the raw hex value and the original assembly line that it came from.
+  - `gtkwave` can translate bits into words with the aid of `Translate Filter Files` and `Translate Filter Processes`.
+    - `Translate Filter Files` are great for expressing `enum` types like states and mux select inputs. This [guide](http://moxielogic.org/blog/gtkwave-tip-2-translate-filter-files.html) shows how to set them up. Note that you will have to have the radix in the file match the radix in gtkwave (e.g. if you are writing unsigned decimal values in your filter file, you should right click and make sure that the representation of that signal in gtkwave is unsigned decimal as well.) 
+    - `Translate Filter Processes` are similar to the filter files, but use code to represent the output instead. `gtkwave_filter.py` is an example that runs a disassembler on an instruction and represents it in human readable assembly instead. If you add this to your `IR` register in gtkwave it will make it much much much easier to see what your core is doing. To use, make sure that the IR is displayed in hexadecimal, then right click, `Data Format` -> `Translate Filter Process` -> `Enable and Select`. Then browse for `gtkwave_filter.py` and make sure it is highlighted before selectiong `OK`.
 
 # Final Deliverable
 The MVP for this project is a core that works in simulation, but I recommend pushing for a synthesizable core that can communicate with peripherals. Instructions for that part will be available after the break.
