@@ -60,7 +60,7 @@ rv32i_multicycle_core CORE (
   .clk(clk), .rst(rst), .ena(1'b1),
   .mem_addr(core_mem_addr), .mem_rd_data(core_mem_rd_data),
   .mem_wr_ena(core_mem_wr_ena), .mem_wr_data(core_mem_wr_data),
-  .PC(core_pc), .instructions_completed(instructions_completed)
+  .PC(core_pc)
 );
 
 // Memory Management Unit
