@@ -70,5 +70,58 @@ alu_behavioural ALU (
 );
 
 // Implement your multicycle rv32i CPU here!
+logic [31:0] instr;
+enum logic [1:0] {S_FETCH, S_DECODE, S_EXEC_R, S_ALU_WRITEBACK} state;
+op_type_t op_type;
+funct3_ritype_t funct3_ritype;
+logic [6:0] funct7_rtype;
+logic funct7_is_zeros;
+
+always_comb begin : blockName
+  PC_next = PC + 4;
+  funct7_is_zeros = ~|(funct7_rtype);
+end
+
+
+always_ff @( posedge clk ) begin : control_unit_ff
+  if (rst) begin
+    state <= S_FETCH;
+  end
+  else if (ena) begin
+    case (state)
+      S_FETCH : begin
+        mem_addr <= PC;
+        PC_old <= PC;
+        PC <= PC_next;
+        instr <= mem_rd_data;
+        state <= S_DECODE;
+      end
+      S_DECODE : begin
+        op_type <= instr[6:0];
+        case (op_type)
+          OP_RTYPE : begin
+            rs1 <= instr[19:15];
+            rs2 <= instr[24:20];
+            rd <= instr[11:7];
+            funct3_ritype <= instr[14:12];
+            funct7_rtype <= instr[31:25];
+            state <= S_EXEC_R;
+          end
+        endcase
+      end
+      S_EXEC_R : begin
+        src_a <= reg_data1;
+        src_b <= reg_data2;
+        case (funct3_ritype)
+          FUNCT3_ADD : alu_control <= funct7_is_zeros ? ALU_ADD : ALU_SUB;
+        endcase
+        state <= S_ALU_WRITEBACK;
+      end
+      S_ALU_WRITEBACK : begin
+        rfile_wr_data <= alu_result;
+      end
+    endcase
+  end
+end
 
 endmodule
