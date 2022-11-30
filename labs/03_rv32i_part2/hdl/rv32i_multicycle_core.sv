@@ -86,17 +86,18 @@ end
 always_ff @( posedge clk ) begin : control_unit_ff
   if (rst) begin
     state <= S_FETCH;
+    //PC <= PC_START_ADDRESS;
   end
   else if (ena) begin
     case (state)
       S_FETCH : begin
         mem_addr <= PC;
-        PC_old <= PC;
-        PC <= PC_next;
+        PC_ena <= 1;
         instr <= mem_rd_data;
         state <= S_DECODE;
       end
       S_DECODE : begin
+        PC_ena <= 0;
         op_type <= instr[6:0];
         case (op_type)
           OP_RTYPE : begin
