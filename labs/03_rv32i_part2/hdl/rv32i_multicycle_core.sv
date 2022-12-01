@@ -23,7 +23,7 @@ output logic mem_wr_ena;
 // Program Counter
 output wire [31:0] PC;
 wire [31:0] PC_old;
-logic PC_ena;
+logic PC_ena; // AKA PCWrite
 logic [31:0] PC_next; 
 
 // Program Counter Registers
@@ -31,7 +31,22 @@ register #(.N(32), .RESET(PC_START_ADDRESS)) PC_REGISTER (
   .clk(clk), .rst(rst), .ena(PC_ena), .d(PC_next), .q(PC)
 );
 register #(.N(32)) PC_OLD_REGISTER(
-  .clk(clk), .rst(rst), .ena(PC_ena), .d(PC), .q(PC_old)
+  .clk(clk), .rst(rst), .ena(ir_write_ena), .d(PC), .q(PC_old)
+);
+register #(.N(32)) INSTRUCTION_REGISTER(
+  .clk(clk), .rst(rst), .ena(ir_write_ena), .d(mem_rd_data), .q(instr)
+);
+register #(.N(32)) SMALL_DATA_REGISTER(
+  .clk(clk), .rst(rst), .ena(1'b1), .d(mem_rd_data), .q(data)
+);
+register #(.N(32)) RD1_REGISTER(
+  .clk(clk), .rst(rst), .ena(1'b1), .d(reg_data1), .q(a)
+);
+register #(.N(32)) RD2_REGISTER(
+  .clk(clk), .rst(rst), .ena(1'b1), .d(reg_data2), .q(mem_wr_data)
+);
+register #(.N(32)) RESULT_REGISTER(
+  .clk(clk), .rst(rst), .ena(1'b1), .d(alu_result), .q(alu_out)
 );
 
 //  an example of how to make named inputs for a mux:
@@ -77,8 +92,26 @@ funct3_ritype_t funct3_ritype;
 logic [6:0] funct7_rtype;
 logic funct7_is_zeros;
 
+
+//
+logic [31:0] result, data, a, imm_ext, alu_out;
+
+// Control unit signals — PCWrite is PC_ena, MemWrite is mem_wr_ena (output), alu_control, & reg_write
+logic addr_src; // 0 if PC is mem_addr, 1 if result is mem_addr
+logic ir_write_ena; // If enabled, update PC_OLD_REGISTER & INSTRUCTION_REGISTER  
+logic [1:0] result_src; // Chooses result: 00 (ALUOut), 01 (Data (from rd_data)), 10 (ALUResult)
+logic [1:0] ALU_src_a, ALU_src_b; // See diagram
+logic [1:0] imm_src; // ?? Controls extend
+
+mux4 #(.N(32)) ALU_src_a_mux(PC, PC_old, a, 0, ALU_src_a, src_a);
+mux4 #(.N(32)) ALU_src_b_mux(mem_wr_data, imm_ext, 32'b100, 0, ALU_src_b, src_b);
+mux4 #(.N(32)) final_result_mux(alu_out, data, alu_result, 0, result_src, result);
+
+
 always_comb begin : blockName
-  PC_next = PC + 4;
+  mem_addr = addr_src ? PC : result;
+  rfile_wr_data = result;
+  PC_next = result;
   funct7_is_zeros = ~|(funct7_rtype);
 end
 
@@ -86,14 +119,17 @@ end
 always_ff @( posedge clk ) begin : control_unit_ff
   if (rst) begin
     state <= S_FETCH;
-    //PC <= PC_START_ADDRESS;
   end
   else if (ena) begin
     case (state)
       S_FETCH : begin
-        mem_addr <= PC;
+        addr_src <= 0;
+        ir_write_ena <= 1;
+        ALU_src_a <= 2'b00;
+        ALU_src_b <= 2'b10;
+        alu_control <= ALU_ADD;
+        result_src <= 2'b10;
         PC_ena <= 1;
-        instr <= mem_rd_data;
         state <= S_DECODE;
       end
       S_DECODE : begin
@@ -111,8 +147,6 @@ always_ff @( posedge clk ) begin : control_unit_ff
         endcase
       end
       S_EXEC_R : begin
-        src_a <= reg_data1;
-        src_b <= reg_data2;
         case (funct3_ritype)
           FUNCT3_ADD : alu_control <= funct7_is_zeros ? ALU_ADD : ALU_SUB;
         endcase
