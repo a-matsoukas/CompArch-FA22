@@ -97,34 +97,73 @@ logic funct7_is_zeros;
 logic [31:0] result, data, a, imm_ext, alu_out;
 
 // Control unit signals — PCWrite is PC_ena, MemWrite is mem_wr_ena (output), alu_control, & reg_write
-logic mem_addr_src; // 0 if PC is mem_addr, 1 if result is mem_addr
 logic ir_write_ena; // If enabled, update PC_OLD_REGISTER & INSTRUCTION_REGISTER  
-logic [1:0] result_src; // Chooses result: 00 (ALUOut), 01 (Data (from rd_data)), 10 (ALUResult)
-logic [1:0] ALU_src_a, ALU_src_b; // See diagram
 logic [1:0] imm_src; // ?? Controls extend
 
 
 // Named MUXes
+//mux4 #(.N(32)) ALU_src_a_mux(PC, PC_old, a, 0, ALU_src_a, src_a);
+//mux4 #(.N(32)) ALU_src_b_mux(mem_wr_data, imm_ext, 32'b100, 0, ALU_src_b, src_b);
+//mux4 #(.N(32)) final_result_mux(alu_out, data, alu_result, 0, result_src, result);
 enum logic {MEM_SRC_PC, MEM_SRC_RESULT} mem_addr_src;
 always_comb begin : memory_read_address_mux
-  case(mem_src)
-    MEM_SRC_RESULT : mem_rd_addr = alu_result;
-    MEM_SRC_PC : mem_rd_addr = PC;
-    default: mem_rd_addr = 0;
+  case(mem_addr_src)
+    MEM_SRC_RESULT : mem_addr = result;
+    MEM_SRC_PC     : mem_addr = PC;
+    default : mem_addr = 0;
   endcase
 end
-mux4 #(.N(32)) ALU_src_a_mux(PC, PC_old, a, 0, ALU_src_a, src_a);
-mux4 #(.N(32)) ALU_src_b_mux(mem_wr_data, imm_ext, 32'b100, 0, ALU_src_b, src_b);
-mux4 #(.N(32)) final_result_mux(alu_out, data, alu_result, 0, result_src, result);
+enum logic [1:0] {SRC_A_SRC_PC, SRC_A_SRC_PC_OLD, SRC_A_SRC_A} ALU_src_a;
+always_comb begin : ALU_src_a_mux
+  case(ALU_src_a)
+    SRC_A_SRC_PC     : src_a = PC;
+    SRC_A_SRC_PC_OLD : src_a = PC_old;
+    SRC_A_SRC_A      : src_a = a;
+    default : src_a = 0;
+  endcase
+end
+enum logic [1:0] {SRC_B_SRC_MEM_WRITE_DATA, SRC_B_SRC_EXTENTION, SRC_B_SRC_4} ALU_src_b;
+always_comb begin : ALU_src_b_mux
+  case(ALU_src_b)
+    SRC_B_SRC_MEM_WRITE_DATA : src_b = mem_wr_data;
+    SRC_B_SRC_EXTENTION      : src_b = imm_ext;
+    SRC_B_SRC_4              : src_b = 32'b100;
+    default : src_b = 0;
+  endcase
+end
+enum logic [1:0] {RESULT_SRC_ALU_OUT, RESULT_SRC_DATA, RESULT_SRC_ALU_RESULT} result_src;
+always_comb begin : final_result_mux
+  case(result_src)
+    RESULT_SRC_ALU_OUT    : result = alu_out;
+    RESULT_SRC_DATA       : result = data;
+    RESULT_SRC_ALU_RESULT : result = alu_result;
+    default : result = 0;
+  endcase
+end
+
 
 
 always_comb begin : blockName
-  mem_addr = mem_addr_src ? PC : result;
+  //mem_addr = mem_addr_src ? PC : result;
   rfile_wr_data = result;
   PC_next = result;
   funct7_is_zeros = ~|(funct7_rtype);
 end
 
+/*
+always_comb begin : decode_instr
+  $cast(op_type, instr[6:0]);
+  case(op_type)
+    OP_RTYPE : begin
+      rs1 = instr[19:15];
+      rs2 = instr[24:20];
+      rd = instr[11:7];
+      $cast(funct3_ritype, instr[14:12]);
+      funct7_rtype = instr[31:25];
+    end
+  endcase
+end
+*/
 
 always_ff @( posedge clk ) begin : control_unit_ff
   if (rst) begin
@@ -133,12 +172,12 @@ always_ff @( posedge clk ) begin : control_unit_ff
   else if (ena) begin
     case (state)
       S_FETCH : begin
-        mem_addr_src <= 0;
+        mem_addr_src <= MEM_SRC_PC;
         ir_write_ena <= 1;
-        ALU_src_a <= 2'b00;
-        ALU_src_b <= 2'b10;
+        ALU_src_a <= SRC_A_SRC_PC;
+        ALU_src_b <= SRC_B_SRC_4;
         alu_control <= ALU_ADD;
-        result_src <= 2'b10;
+        result_src <= RESULT_SRC_ALU_RESULT;
         PC_ena <= 1;
         state <= S_DECODE;
       end
