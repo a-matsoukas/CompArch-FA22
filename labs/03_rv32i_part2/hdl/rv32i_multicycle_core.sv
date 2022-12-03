@@ -86,15 +86,17 @@ alu_behavioural ALU (
 
 // Implement your multicycle rv32i CPU here!
 logic [31:0] instr;
-enum logic [1:0] {S_FETCH, S_DECODE, S_EXEC_R, S_ALU_WRITEBACK} state;
+enum logic [1:0] {S_FETCH, S_DECODE, S_EXEC_R, S_EXEC_I, S_ALU_WRITEBACK} state;
 op_type_t op_type;
 funct3_ritype_t funct3_ritype;
-logic [6:0] funct7_rtype;
+logic [6:0] funct7_rtype, funct7_itype;
 logic funct7_is_zeros;
 
 
 //
 logic [31:0] result, data, a, imm_ext, alu_out;
+logic [11:0] imm;
+logic [4:0] uimm;
 
 // Control unit signals — PCWrite is PC_ena, MemWrite is mem_wr_ena (output), alu_control, & reg_write
 logic ir_write_ena; // If enabled, update PC_OLD_REGISTER & INSTRUCTION_REGISTER  
@@ -102,9 +104,6 @@ logic [1:0] imm_src; // ?? Controls extend
 
 
 // Named MUXes
-//mux4 #(.N(32)) ALU_src_a_mux(PC, PC_old, a, 0, ALU_src_a, src_a);
-//mux4 #(.N(32)) ALU_src_b_mux(mem_wr_data, imm_ext, 32'b100, 0, ALU_src_b, src_b);
-//mux4 #(.N(32)) final_result_mux(alu_out, data, alu_result, 0, result_src, result);
 enum logic {MEM_SRC_PC, MEM_SRC_RESULT} mem_addr_src;
 always_comb begin : memory_read_address_mux
   case(mem_addr_src)
@@ -140,6 +139,16 @@ always_comb begin : final_result_mux
     default : result = 0;
   endcase
 end
+enum logic [1:0] {IMM_SRC_I, IMM_SRC_S, IMM_SRC_B} imm_src;
+always_comb begin : imm_mux
+  case(imm_src)
+    IMM_SRC_I : imm = instr[31:20];
+    IMM_SRC_S : imm = {instr[31:25], instr[11:7]};
+    IMM_SRC_B : imm = {instr[31], instr[7], instr[30:25], instr[11:8]}; // Check bc this is [12:1] not [11:0]
+    default : imm = 0;
+  endcase
+end
+
 
 
 
@@ -148,6 +157,8 @@ always_comb begin : blockName
   rfile_wr_data = result;
   PC_next = result;
   funct7_is_zeros = ~|(funct7_rtype);
+  imm_ext = {{20{imm[11]}}, imm};
+  uimm = imm[4:0];
 end
 
 /*
@@ -193,16 +204,33 @@ always_ff @( posedge clk ) begin : control_unit_ff
             funct7_rtype <= instr[31:25];
             state <= S_EXEC_R;
           end
+          OP_ITYPE : begin
+            rs1 <= instr[19:15];
+            funct3_ritype <= instr[14:12];
+            rd <= instr[11:7];
+            imm_src <= IMM_SRC_I;
+            funct7_itype <= instr[31:25];
+            state <= S_EXEC_I;
+          end
         endcase
       end
       S_EXEC_R : begin
+        ALU_src_a <= SRC_A_SRC_A;
+        ALU_src_b <= SRC_B_SRC_MEM_WRITE_DATA;
         case (funct3_ritype)
           FUNCT3_ADD : alu_control <= funct7_is_zeros ? ALU_ADD : ALU_SUB;
         endcase
         state <= S_ALU_WRITEBACK;
       end
+      S_EXEC_I : begin
+        ALU_src_a <= SRC_A_SRC_A;
+        ALU_src_b <= SRC_B_SRC_EXTENTION;
+        case (funct3_ritype)
+          FUNCT3_ADD : alu_control <= ALU_ADD;
+        endcase
+      end
       S_ALU_WRITEBACK : begin
-        rfile_wr_data <= alu_result;
+        result_src <= RESULT_SRC_ALU_OUT;
       end
     endcase
   end
