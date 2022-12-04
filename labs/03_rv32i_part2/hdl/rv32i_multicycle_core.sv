@@ -86,7 +86,7 @@ alu_behavioural ALU (
 
 // Implement your multicycle rv32i CPU here!
 logic [31:0] instr;
-enum logic [1:0] {S_FETCH, S_DECODE, S_EXEC_R, S_EXEC_I, S_ALU_WRITEBACK} state;
+enum logic [2:0] {S_FETCH, S_DECODE, S_EXEC_R, S_EXEC_I, S_ALU_WRITEBACK} state;
 op_type_t op_type;
 funct3_ritype_t funct3_ritype;
 logic [6:0] funct7_rtype, funct7_itype;
@@ -100,7 +100,7 @@ logic [4:0] uimm;
 
 // Control unit signals — PCWrite is PC_ena, MemWrite is mem_wr_ena (output), alu_control, & reg_write
 logic ir_write_ena; // If enabled, update PC_OLD_REGISTER & INSTRUCTION_REGISTER  
-logic [1:0] imm_src; // ?? Controls extend
+//logic [1:0] imm_src; // ?? Controls extend
 
 
 // Named MUXes
@@ -159,6 +159,21 @@ always_comb begin : blockName
   funct7_is_zeros = ~|(funct7_rtype);
   imm_ext = {{20{imm[11]}}, imm};
   uimm = imm[4:0];
+
+  case (instr[6:0])
+    OP_RTYPE : begin
+      rs1 = instr[19:15];
+      rs2 = instr[24:20];
+//      rd = instr[11:7];
+      funct7_rtype = instr[31:25];
+    end
+    OP_ITYPE : begin
+      rs1 = instr[19:15];
+//      rd = instr[11:7];
+      imm_src = IMM_SRC_I;
+      funct7_itype = instr[31:25];
+    end
+  endcase
 end
 
 /*
@@ -183,6 +198,7 @@ always_ff @( posedge clk ) begin : control_unit_ff
   else if (ena) begin
     case (state)
       S_FETCH : begin
+        reg_write = 0;
         mem_addr_src <= MEM_SRC_PC;
         ir_write_ena <= 1;
         ALU_src_a <= SRC_A_SRC_PC;
@@ -194,22 +210,14 @@ always_ff @( posedge clk ) begin : control_unit_ff
       end
       S_DECODE : begin
         PC_ena <= 0;
-        op_type <= instr[6:0];
-        case (op_type)
+        ir_write_ena <= 0;
+        case (instr[6:0])
           OP_RTYPE : begin
-            rs1 <= instr[19:15];
-            rs2 <= instr[24:20];
             rd <= instr[11:7];
-            funct3_ritype <= instr[14:12];
-            funct7_rtype <= instr[31:25];
             state <= S_EXEC_R;
           end
           OP_ITYPE : begin
-            rs1 <= instr[19:15];
-            funct3_ritype <= instr[14:12];
             rd <= instr[11:7];
-            imm_src <= IMM_SRC_I;
-            funct7_itype <= instr[31:25];
             state <= S_EXEC_I;
           end
         endcase
@@ -217,7 +225,7 @@ always_ff @( posedge clk ) begin : control_unit_ff
       S_EXEC_R : begin
         ALU_src_a <= SRC_A_SRC_A;
         ALU_src_b <= SRC_B_SRC_MEM_WRITE_DATA;
-        case (funct3_ritype)
+        case (instr[14:12]) // funct3_ritype
           FUNCT3_ADD : alu_control <= funct7_is_zeros ? ALU_ADD : ALU_SUB;
         endcase
         state <= S_ALU_WRITEBACK;
@@ -225,12 +233,15 @@ always_ff @( posedge clk ) begin : control_unit_ff
       S_EXEC_I : begin
         ALU_src_a <= SRC_A_SRC_A;
         ALU_src_b <= SRC_B_SRC_EXTENTION;
-        case (funct3_ritype)
+        case (instr[14:12]) //funct3_ritype
           FUNCT3_ADD : alu_control <= ALU_ADD;
         endcase
+        state <= S_ALU_WRITEBACK;
       end
       S_ALU_WRITEBACK : begin
         result_src <= RESULT_SRC_ALU_OUT;
+        reg_write <= 1;
+        state <= S_FETCH;
       end
     endcase
   end

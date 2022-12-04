@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Dec  3 22:09:59 2022
+[*] Sun Dec  4 21:32:30 2022
 [*]
-[dumpfile] "/home/lila/Documents/schoolwork/comparch/CompArch-FA22/labs/03_rv32i_part2/rv32i_system.fst"
-[dumpfile_mtime] "Sat Dec  3 22:09:10 2022"
-[dumpfile_size] 6719
-[savefile] "/home/lila/Documents/schoolwork/comparch/CompArch-FA22/labs/03_rv32i_part2/tests/rv32i_system.gtkw"
+[dumpfile] "/home/amatsoukas/Computer Architecture/CompArch-FA22/labs/03_rv32i_part2/rv32i_system.fst"
+[dumpfile_mtime] "Sun Dec  4 21:26:02 2022"
+[dumpfile_size] 6810
+[savefile] "/home/amatsoukas/Computer Architecture/CompArch-FA22/labs/03_rv32i_part2/tests/rv32i_system.gtkw"
 [timestart] 0
-[size] 1920 946
+[size] 1846 1016
 [pos] -1 -1
-*-16.771574 62600 775000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.771574 72100 775000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] test_rv32i_system.
 [treeopen] test_rv32i_system.UUT.
 [treeopen] test_rv32i_system.UUT.CORE.
 [treeopen] test_rv32i_system.UUT.MMU.
 [sst_width] 508
-[signals_width] 618
+[signals_width] 319
 [sst_expanded] 1
 [sst_vpaned_height] 414
 @28
@@ -63,7 +63,7 @@ test_rv32i_system.UUT.CORE.result[31:0]
 @1401200
 -group_end
 @29
-test_rv32i_system.UUT.CORE.state[1:0]
+test_rv32i_system.UUT.CORE.state[2:0]
 @200
 -ALU
 @24
@@ -85,12 +85,12 @@ test_rv32i_system.UUT.MMU.core_wr_ena
 @22
 test_rv32i_system.UUT.MMU.core_wr_data[31:0]
 @2028
-^2 /home/lila/Documents/schoolwork/comparch/CompArch-FA22/labs/03_rv32i_part2/tests/mmu_bank_decoder.txt
+^1 /home/amatsoukas/Computer Architecture/CompArch-FA22/labs/03_rv32i_part2/tests/mmu_bank_decoder.txt
 test_rv32i_system.UUT.MMU.bank_access[3:0]
 @28
 test_rv32i_system.UUT.MMU.mmr_access[4:0]
 @2022
-^3 /home/lila/Documents/schoolwork/comparch/CompArch-FA22/labs/03_rv32i_part2/tests/mmu_mmr_index_t.txt
+^2 /home/amatsoukas/Computer Architecture/CompArch-FA22/labs/03_rv32i_part2/tests/mmu_mmr_index_t.txt
 test_rv32i_system.UUT.MMU.mmr_index[3:0]
 @28
 test_rv32i_system.UUT.MMU.bank_wr_decoder[3:0]
