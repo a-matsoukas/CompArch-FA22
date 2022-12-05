@@ -233,6 +233,9 @@ always_ff @( posedge clk ) begin : control_unit_ff
         ALU_src_b <= SRC_B_SRC_EXTENTION;
         case (instr[14:12]) //funct3_ritype
           FUNCT3_ADD : alu_control <= ALU_ADD;
+          FUNCT3_XOR : alu_control <= ALU_XOR;
+          FUNCT3_OR : alu_control <= ALU_OR;
+          FUNCT3_AND : alu_control <= ALU_AND;
         endcase
         state <= S_ALU_WRITEBACK;
       end
