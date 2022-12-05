@@ -164,12 +164,12 @@ always_comb begin : blockName
     OP_RTYPE : begin
       rs1 = instr[19:15];
       rs2 = instr[24:20];
-//      rd = instr[11:7];
+      rd = instr[11:7];
       funct7_rtype = instr[31:25];
     end
     OP_ITYPE : begin
       rs1 = instr[19:15];
-//      rd = instr[11:7];
+      rd = instr[11:7];
       imm_src = IMM_SRC_I;
       funct7_itype = instr[31:25];
     end
@@ -213,11 +213,9 @@ always_ff @( posedge clk ) begin : control_unit_ff
         ir_write_ena <= 0;
         case (instr[6:0])
           OP_RTYPE : begin
-            rd <= instr[11:7];
             state <= S_EXEC_R;
           end
           OP_ITYPE : begin
-            rd <= instr[11:7];
             state <= S_EXEC_I;
           end
         endcase
