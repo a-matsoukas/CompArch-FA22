@@ -86,7 +86,7 @@ alu_behavioural ALU (
 
 // Implement your multicycle rv32i CPU here!
 logic [31:0] instr;
-enum logic [2:0] {S_FETCH, S_DECODE, S_EXEC_R, S_EXEC_I, S_ALU_WRITEBACK} state;
+enum logic [3:0] {S_FETCH, S_DECODE, S_MEM_ADDR, S_EXEC_R, S_EXEC_I, JAL, JALR, BRANCH, S_ALU_WRITEBACK} state;
 op_type_t op_type;
 funct3_ritype_t funct3_ritype;
 logic [6:0] funct7_rtype, funct7_itype;
@@ -148,12 +148,22 @@ always_comb begin : imm_mux
     default : imm = 0;
   endcase
 end
-
+always_comb begin : reg_write_mux
+  case(state)
+    S_ALU_WRITEBACK : reg_write = 1;
+    default : reg_write = 0;
+  endcase
+end
+always_comb begin : PC_ena_mux
+  case(state)
+    S_FETCH : PC_ena = 1;
+    default : PC_ena = 0;
+  endcase
+end
 
 
 
 always_comb begin : blockName
-  //mem_addr = mem_addr_src ? PC : result;
   rfile_wr_data = result;
   PC_next = result;
   funct7_is_zeros = ~|(funct7_rtype);
@@ -174,6 +184,42 @@ always_comb begin : blockName
       funct7_itype = instr[31:25];
     end
   endcase
+
+  case (state)
+      S_FETCH : begin
+        mem_addr_src = MEM_SRC_PC;
+        ir_write_ena = 1;
+        ALU_src_a = SRC_A_SRC_PC;
+        ALU_src_b = SRC_B_SRC_4;
+        alu_control = ALU_ADD;
+        result_src = RESULT_SRC_ALU_RESULT;
+      end
+      S_DECODE : begin
+        ir_write_ena = 0;
+      end
+      S_EXEC_R : begin
+        ALU_src_a = SRC_A_SRC_A;
+        ALU_src_b = SRC_B_SRC_MEM_WRITE_DATA;
+        case (instr[14:12]) // funct3_ritype
+          FUNCT3_ADD : alu_control = ALU_ADD; // Fix
+        endcase
+      end
+      S_EXEC_I : begin
+        ALU_src_a = SRC_A_SRC_A;
+        ALU_src_b = SRC_B_SRC_EXTENTION;
+        case (instr[14:12]) //funct3_ritype
+          FUNCT3_ADD : alu_control = ALU_ADD;
+          FUNCT3_XOR : alu_control = ALU_XOR;
+          FUNCT3_OR  : alu_control = ALU_OR;
+          FUNCT3_AND : alu_control = ALU_AND;
+        endcase
+      end
+      S_ALU_WRITEBACK : begin
+        result_src = RESULT_SRC_ALU_OUT;
+      end
+    endcase
+
+
 end
 
 /*
@@ -198,19 +244,9 @@ always_ff @( posedge clk ) begin : control_unit_ff
   else if (ena) begin
     case (state)
       S_FETCH : begin
-        reg_write = 0;
-        mem_addr_src <= MEM_SRC_PC;
-        ir_write_ena <= 1;
-        ALU_src_a <= SRC_A_SRC_PC;
-        ALU_src_b <= SRC_B_SRC_4;
-        alu_control <= ALU_ADD;
-        result_src <= RESULT_SRC_ALU_RESULT;
-        PC_ena <= 1;
         state <= S_DECODE;
       end
       S_DECODE : begin
-        PC_ena <= 0;
-        ir_write_ena <= 0;
         case (instr[6:0])
           OP_RTYPE : begin
             state <= S_EXEC_R;
@@ -221,27 +257,12 @@ always_ff @( posedge clk ) begin : control_unit_ff
         endcase
       end
       S_EXEC_R : begin
-        ALU_src_a <= SRC_A_SRC_A;
-        ALU_src_b <= SRC_B_SRC_MEM_WRITE_DATA;
-        case (instr[14:12]) // funct3_ritype
-          FUNCT3_ADD : alu_control <= funct7_is_zeros ? ALU_ADD : ALU_SUB;
-        endcase
         state <= S_ALU_WRITEBACK;
       end
       S_EXEC_I : begin
-        ALU_src_a <= SRC_A_SRC_A;
-        ALU_src_b <= SRC_B_SRC_EXTENTION;
-        case (instr[14:12]) //funct3_ritype
-          FUNCT3_ADD : alu_control <= ALU_ADD;
-          FUNCT3_XOR : alu_control <= ALU_XOR;
-          FUNCT3_OR : alu_control <= ALU_OR;
-          FUNCT3_AND : alu_control <= ALU_AND;
-        endcase
         state <= S_ALU_WRITEBACK;
       end
       S_ALU_WRITEBACK : begin
-        result_src <= RESULT_SRC_ALU_OUT;
-        reg_write <= 1;
         state <= S_FETCH;
       end
     endcase
