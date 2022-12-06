@@ -121,11 +121,12 @@ always_comb begin : ALU_src_a_mux
     default : src_a = 0;
   endcase
 end
-enum logic [1:0] {SRC_B_SRC_MEM_WRITE_DATA, SRC_B_SRC_EXTENTION, SRC_B_SRC_4} ALU_src_b;
+enum logic [1:0] {SRC_B_SRC_MEM_WRITE_DATA, SRC_B_SRC_EXTENTION, SRC_B_SRC_UIMM, SRC_B_SRC_4} ALU_src_b;
 always_comb begin : ALU_src_b_mux
   case(ALU_src_b)
     SRC_B_SRC_MEM_WRITE_DATA : src_b = mem_wr_data;
     SRC_B_SRC_EXTENTION      : src_b = imm_ext;
+    SRC_B_SRC_UIMM           : src_b = uimm;
     SRC_B_SRC_4              : src_b = 32'b100;
     default : src_b = 0;
   endcase
@@ -201,15 +202,51 @@ always_comb begin : blockName
         ALU_src_a = SRC_A_SRC_A;
         ALU_src_b = SRC_B_SRC_MEM_WRITE_DATA;
         case (instr[14:12]) // funct3_ritype
-          FUNCT3_ADD : alu_control = ALU_ADD; // Fix
+          FUNCT3_ADD : begin
+            if (|(instr[31:25])) begin
+              alu_control = ALU_SUB;
+            end
+            else begin
+              alu_control = ALU_ADD;
+            end
+          end
+          FUNCT3_SLL : alu_control = ALU_SLL;
+          FUNCT3_SLT : alu_control = ALU_SLT;
+          FUNCT3_SLTU : alu_control = ALU_SLTU;
+          FUNCT3_XOR : alu_control = ALU_XOR;
+          FUNCT3_SHIFT_RIGHT : begin
+            if (|(instr[31:25])) begin
+              alu_control = ALU_SRA;
+            end
+            else begin
+              alu_control = ALU_SRL;
+            end
+          end
+          FUNCT3_OR  : alu_control = ALU_OR;
+          FUNCT3_AND : alu_control = ALU_AND;
         endcase
       end
       S_EXEC_I : begin
         ALU_src_a = SRC_A_SRC_A;
-        ALU_src_b = SRC_B_SRC_EXTENTION;
+        case(instr[14:12])
+          FUNCT3_SLL, FUNCT3_SHIFT_RIGHT : ALU_src_b = SRC_B_SRC_UIMM;
+          default : ALU_src_b = SRC_B_SRC_EXTENTION;
+        endcase
+
         case (instr[14:12]) //funct3_ritype
           FUNCT3_ADD : alu_control = ALU_ADD;
+          FUNCT3_SLL : alu_control = ALU_SLL;
+          FUNCT3_SLT : alu_control = ALU_SLT;
+          FUNCT3_SLTU : alu_control = ALU_SLTU;
           FUNCT3_XOR : alu_control = ALU_XOR;
+          FUNCT3_SHIFT_RIGHT : begin
+            if (|(instr[31:25])) begin
+              alu_control = ALU_SRA;
+            end
+            else begin
+              alu_control = ALU_SRL;
+            end
+          end
           FUNCT3_OR  : alu_control = ALU_OR;
           FUNCT3_AND : alu_control = ALU_AND;
         endcase
