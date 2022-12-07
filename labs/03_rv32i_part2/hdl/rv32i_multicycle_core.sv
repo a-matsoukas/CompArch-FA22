@@ -86,7 +86,8 @@ alu_behavioural ALU (
 
 // Implement your multicycle rv32i CPU here!
 logic [31:0] instr;
-enum logic [3:0] {S_FETCH, S_DECODE, S_MEM_ADDR, S_EXEC_R, S_EXEC_I, JAL, JALR, BRANCH, S_ALU_WRITEBACK} state;
+enum logic [3:0] {S_FETCH, S_DECODE, S_MEM_ADDR, S_EXEC_R, S_EXEC_I, JAL, JALR, BRANCH, S_ALU_WRITEBACK,
+                  S_MEM_READ, S_MEM_WRITE, S_JUMP_WRITEBACK, S_MEM_WRITEBACK} state;
 op_type_t op_type;
 funct3_ritype_t funct3_ritype;
 logic [6:0] funct7_rtype, funct7_itype;
@@ -149,19 +150,6 @@ always_comb begin : imm_mux
     default : imm = 0;
   endcase
 end
-always_comb begin : reg_write_mux
-  case(state)
-    S_ALU_WRITEBACK : reg_write = 1;
-    default : reg_write = 0;
-  endcase
-end
-always_comb begin : PC_ena_mux
-  case(state)
-    S_FETCH : PC_ena = 1;
-    default : PC_ena = 0;
-  endcase
-end
-
 
 
 always_comb begin : blockName
@@ -178,16 +166,24 @@ always_comb begin : blockName
       rd = instr[11:7];
       funct7_rtype = instr[31:25];
     end
-    OP_ITYPE : begin
+    OP_ITYPE, OP_LTYPE : begin
       rs1 = instr[19:15];
       rd = instr[11:7];
       imm_src = IMM_SRC_I;
       funct7_itype = instr[31:25];
     end
+    OP_STYPE : begin
+      rs1 = instr[19:15];
+      rs2 = instr[24:20];
+      imm_src = IMM_SRC_S;
+    end
   endcase
 
   case (state)
       S_FETCH : begin
+        mem_wr_ena = 0;
+        reg_write = 0;
+        PC_ena = 1;
         mem_addr_src = MEM_SRC_PC;
         ir_write_ena = 1;
         ALU_src_a = SRC_A_SRC_PC;
@@ -197,6 +193,7 @@ always_comb begin : blockName
       end
       S_DECODE : begin
         ir_write_ena = 0;
+        PC_ena = 0;
       end
       S_EXEC_R : begin
         ALU_src_a = SRC_A_SRC_A;
@@ -251,28 +248,37 @@ always_comb begin : blockName
           FUNCT3_AND : alu_control = ALU_AND;
         endcase
       end
+
+      S_MEM_ADDR : begin
+        ALU_src_a = SRC_A_SRC_A;
+        ALU_src_b = SRC_B_SRC_EXTENTION;
+        alu_control = ALU_ADD;
+      end
+
+      S_MEM_READ : begin
+        result_src = RESULT_SRC_ALU_OUT;
+        mem_addr_src = MEM_SRC_RESULT;
+      end
+
+      S_MEM_WRITEBACK : begin
+        result_src = RESULT_SRC_DATA;
+        reg_write = 1;
+      end
+
+      S_MEM_WRITE : begin
+        result_src = RESULT_SRC_ALU_OUT;
+        mem_addr_src = MEM_SRC_RESULT;
+        mem_wr_ena = 1;
+      end
+
       S_ALU_WRITEBACK : begin
         result_src = RESULT_SRC_ALU_OUT;
+        reg_write = 1;
       end
     endcase
 
 
 end
-
-/*
-always_comb begin : decode_instr
-  $cast(op_type, instr[6:0]);
-  case(op_type)
-    OP_RTYPE : begin
-      rs1 = instr[19:15];
-      rs2 = instr[24:20];
-      rd = instr[11:7];
-      $cast(funct3_ritype, instr[14:12]);
-      funct7_rtype = instr[31:25];
-    end
-  endcase
-end
-*/
 
 always_ff @( posedge clk ) begin : control_unit_ff
   if (rst) begin
@@ -285,23 +291,23 @@ always_ff @( posedge clk ) begin : control_unit_ff
       end
       S_DECODE : begin
         case (instr[6:0])
-          OP_RTYPE : begin
-            state <= S_EXEC_R;
-          end
-          OP_ITYPE : begin
-            state <= S_EXEC_I;
-          end
+          OP_RTYPE : state <= S_EXEC_R;
+          OP_ITYPE : state <= S_EXEC_I;
+          OP_LTYPE, OP_STYPE : state <= S_MEM_ADDR;
         endcase
       end
-      S_EXEC_R : begin
-        state <= S_ALU_WRITEBACK;
+      S_MEM_ADDR : begin
+        case(instr[6:0])
+          OP_LTYPE : state <= S_MEM_READ;
+          OP_STYPE : state <= S_MEM_WRITE;
+        endcase
       end
-      S_EXEC_I : begin
-        state <= S_ALU_WRITEBACK;
-      end
-      S_ALU_WRITEBACK : begin
-        state <= S_FETCH;
-      end
+      S_EXEC_R        : state <= S_ALU_WRITEBACK;
+      S_EXEC_I        : state <= S_ALU_WRITEBACK;
+      S_MEM_READ      : state <= S_MEM_WRITEBACK;
+      S_MEM_WRITE     : state <= S_FETCH;
+      S_MEM_WRITEBACK : state <= S_FETCH;
+      S_ALU_WRITEBACK : state <= S_FETCH;
     endcase
   end
 end
