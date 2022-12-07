@@ -70,8 +70,8 @@ Optional instructions are in italics.
 - [x] slti
 - [x] sltiu
 ### Memory-Types (Loads/Stores)
-- [ ] lw
-- [ ] sw
+- [x] lw
+- [x] sw
 - [ ] *lb*
 - [ ] *lh*
 - [ ] *lbu*
@@ -80,8 +80,8 @@ Optional instructions are in italics.
 - [ ] *sh*
 
 ### B-types (Branches)
-- [ ] beq
-- [ ] bne
+- [x] beq
+- [x] bne
 - [ ] *blt*
 - [ ] *bge*
 - [ ] *bltu*

@@ -86,7 +86,7 @@ alu_behavioural ALU (
 
 // Implement your multicycle rv32i CPU here!
 logic [31:0] instr;
-enum logic [3:0] {S_FETCH, S_DECODE, S_MEM_ADDR, S_EXEC_R, S_EXEC_I, JAL, JALR, BRANCH, S_ALU_WRITEBACK,
+enum logic [3:0] {S_FETCH, S_DECODE, S_MEM_ADDR, S_EXEC_R, S_EXEC_I, S_JAL, S_JALR, S_BRANCH, S_ALU_WRITEBACK,
                   S_MEM_READ, S_MEM_WRITE, S_JUMP_WRITEBACK, S_MEM_WRITEBACK} state;
 op_type_t op_type;
 funct3_ritype_t funct3_ritype;
@@ -156,7 +156,7 @@ always_comb begin : blockName
   rfile_wr_data = result;
   PC_next = result;
   funct7_is_zeros = ~|(funct7_rtype);
-  imm_ext = {{20{imm[11]}}, imm};
+  imm_ext = (state == S_BRANCH) ? {{19{imm[11]}}, imm, 1'b0} : {{20{imm[11]}}, imm};
   uimm = imm[4:0];
 
   case (instr[6:0])
@@ -176,6 +176,11 @@ always_comb begin : blockName
       rs1 = instr[19:15];
       rs2 = instr[24:20];
       imm_src = IMM_SRC_S;
+    end
+    OP_BTYPE : begin
+      rs1 = instr[19:15];
+      rs2 = instr[24:20];
+      imm_src = IMM_SRC_B;
     end
   endcase
 
@@ -275,6 +280,25 @@ always_comb begin : blockName
         result_src = RESULT_SRC_ALU_OUT;
         reg_write = 1;
       end
+
+      S_BRANCH : begin
+        ALU_src_a = SRC_A_SRC_A;
+        ALU_src_b = SRC_B_SRC_MEM_WRITE_DATA;
+        alu_control = ALU_SUB;
+        result_src = RESULT_SRC_ALU_OUT;
+        case(instr[14:12])
+          FUNCT3_BEQ : begin
+            if (zero) begin
+              PC_ena = 1;
+            end
+          end
+          FUNCT3_BNE : begin
+            if (~zero) begin
+              PC_ena = 1;
+            end
+          end
+        endcase
+      end
     endcase
 
 
@@ -294,6 +318,7 @@ always_ff @( posedge clk ) begin : control_unit_ff
           OP_RTYPE : state <= S_EXEC_R;
           OP_ITYPE : state <= S_EXEC_I;
           OP_LTYPE, OP_STYPE : state <= S_MEM_ADDR;
+          OP_BTYPE : state <= S_BRANCH;
         endcase
       end
       S_MEM_ADDR : begin
@@ -308,6 +333,7 @@ always_ff @( posedge clk ) begin : control_unit_ff
       S_MEM_WRITE     : state <= S_FETCH;
       S_MEM_WRITEBACK : state <= S_FETCH;
       S_ALU_WRITEBACK : state <= S_FETCH;
+      S_BRANCH        : state <= S_FETCH;
     endcase
   end
 end
